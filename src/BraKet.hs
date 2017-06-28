@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies      #-}
 
@@ -74,6 +73,9 @@ instance (Ord a) => BraKet (Ket a) where
     in
       n |*| kt
 
+infixr 7 |.|
+(|.|) :: (Ord a) => Bra a -> Ket a -> Complex Double
+(|.|) x y = Map.foldr (+) 0 (Map.intersectionWith (*) (bra x) (ket y))
 -- DEFINITION OF QUANTUM OPERATOR --
 
 newtype QuantumKernel a = QuantumKernel {kernel :: a -> QuantumState a}
@@ -120,17 +122,13 @@ infixr 9 |:|
       operator = QuantumKernel (\x -> operator qO1 |<>| (kernel $ operator qO2) x)
     , operatorHC = QuantumKernel (\x -> operatorHC qO2 |<>| (kernel $ operatorHC qO1) x)}
 
-matrixForm :: (Ord a) => QuantumOperator a -> [Ket a] -> [Amplitude]
+matrixForm :: (Ord a) => QuantumOperator a -> [Ket a] -> [[Amplitude]]
 matrixForm op kets =
   let
     bras = fmap hC kets
-    elements = fmap (|.|) bras <*> fmap (op |->| ) kets
+    elements =  fmap (fmap (|.|) bras <*> ) $ fmap (op |->|) <$> group kets
   in
     elements
--------------------------------
 
--- DOT PRODUCT --
-infixr 7 |.|
-(|.|) :: (Ord a) => Bra a -> Ket a -> Complex Double
-(|.|) x y = Map.foldr (+) 0 (Map.intersectionWith (*) (bra x) (ket y))
------------------
+commute :: (Ord a) => QuantumOperator a -> QuantumOperator a -> QuantumOperator a
+commute a b = a |:| b |-| b |:| a

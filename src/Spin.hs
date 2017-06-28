@@ -26,7 +26,7 @@ xDown ::  Ket Spin
 xDown = normalize (zUp |-| zDown)
 
 yUp ::  Ket Spin
-yUp = normalize (zUp |+| (0 :+ 1 ::Complex Double) |*| zDown)
+yUp = normalize (zUp |+| (0 :+ 1 :: Complex Double) |*| zDown)
 
 yDown ::  Ket Spin
 yDown = normalize (zUp |-| (0 :+ 1 :: Complex Double) |*| zDown)

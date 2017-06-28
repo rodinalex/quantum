@@ -18,8 +18,6 @@ library
   ghc-options:         -Wall
   exposed-modules:     Lib,
                        BraKet,
-                       Operators,
-                       TypeClasses,
                        Spin
   other-modules:       Lib.Prelude
   build-depends:       base >= 4.7 && < 5
