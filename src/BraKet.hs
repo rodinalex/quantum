@@ -22,6 +22,7 @@ class QuantumStructure a where
 
 class BraKet a where
   normalize :: a -> a
+
 -----------------
 
 type Amplitude = Complex Double
@@ -42,22 +43,22 @@ mkKet :: Amplitude -> a -> Ket a
 mkKet amp st = Ket {ket = Map.singleton st amp}
 
 instance (Ord a) => QuantumUnit (Bra a) where
-    (|+|) x y = Bra { bra = bra x |+| bra y }
-    (|-|) x y = Bra { bra = bra x |-| bra y }
-    (|*|) cd st = Bra { bra = cd |*| bra st }
+    (|+|) (Bra x) (Bra y) = Bra { bra = x |+| y }
+    (|-|) (Bra x) (Bra y) = Bra { bra = x |-| y }
+    (|*|) cd (Bra x) = Bra { bra = cd |*| x }
 
 instance (Ord a) => QuantumUnit (Ket a) where
-    (|+|) x y = Ket { ket = ket x |+| ket y }
-    (|-|) x y = Ket { ket = ket x |-| ket y }
+    (|+|) (Ket x) (Ket y) = Ket { ket = x |+| y }
+    (|-|) (Ket x) (Ket y) = Ket { ket = x |-| y }
     (|*|) cd st = Ket { ket = cd |*| ket st }
 
 instance (Ord a) => QuantumStructure (Bra a) where
   type ConjType (Bra a) = Ket a
-  hC br = Ket (conjugate <$> bra br)
+  hC (Bra x) = Ket (conjugate <$> x)
 
 instance (Ord a) => QuantumStructure (Ket a) where
   type ConjType (Ket a) = Bra a
-  hC kt = Bra (conjugate <$> ket kt)
+  hC (Ket x) = Bra (conjugate <$> x)
 
 instance (Ord a) => BraKet (Bra a) where
   normalize br =
@@ -75,7 +76,13 @@ instance (Ord a) => BraKet (Ket a) where
 
 infixr 7 |.|
 (|.|) :: (Ord a) => Bra a -> Ket a -> Complex Double
-(|.|) x y = Map.foldr (+) 0 (Map.intersectionWith (*) (bra x) (ket y))
+(|.|) (Bra x) (Ket y) = Map.foldr (+) 0 (Map.intersectionWith (*) x y)
+
+infixr 7 |><|
+(|><|) :: (Ord a) => Ket a -> Bra a -> QuantumOperator a
+(|><|) x y = QuantumOperator { operator = QuantumKernel {kernel = \st -> (y |.| mkKet (1 :+ 0 :: Amplitude) st) |*| ket x}
+                             , operatorHC = QuantumKernel {kernel = \st -> (hC x |.| mkKet (1 :+ 0 :: Amplitude) st) |*| ket (hC y)}}
+
 -- DEFINITION OF QUANTUM OPERATOR --
 
 newtype QuantumKernel a = QuantumKernel {kernel :: a -> QuantumState a}

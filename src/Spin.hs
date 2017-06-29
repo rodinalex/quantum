@@ -41,14 +41,3 @@ jz = QuantumKernel { kernel = f }
 
 jzOp :: QuantumOperator Spin
 jzOp = QuantumOperator jz jz
-
---
--- data Jz = Jz
---
--- instance OperatorClass Jz where
---   type StateType Jz = Spin
---   hC Jz = Jz
---   qO Jz s =
---     case s of
---       SpinUp   -> Map.singleton SpinUp (0.5 :+ 0)
---       SpinDown -> Map.singleton SpinDown ((-0.5) :+ 0)
