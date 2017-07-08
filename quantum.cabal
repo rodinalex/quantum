@@ -17,7 +17,7 @@ library
   hs-source-dirs:      src
   ghc-options:         -Wall
   exposed-modules:     Lib,
-                       BraKet,
+                       Algebra,
                        Spin
   other-modules:       Lib.Prelude
   build-depends:       base >= 4.7 && < 5
