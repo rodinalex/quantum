@@ -20,29 +20,6 @@ data Spin = SpinUp
 -- instance BraKet (QuantumState Spin) where
 --   (|.|) a b = 6
 
-<<<<<<< HEAD
-xUp ::  Ket Spin
-xUp = normalize (zUp |+| zDown)
-
-xDown ::  Ket Spin
-xDown = normalize (zUp |-| zDown)
-
-yUp ::  Ket Spin
-yUp = normalize (zUp |+| (0 :+ 1 :: Complex Double) |*| zDown)
-
-yDown ::  Ket Spin
-yDown = normalize (zUp |-| (0 :+ 1 :: Complex Double) |*| zDown)
-
-jz :: QuantumKernel Spin
-jz = QuantumKernel { kernel = f }
-  where
-  f x =
-    case x of
-      SpinUp   -> Map.singleton SpinUp (0.5 :+ 0)
-      SpinDown -> Map.singleton SpinDown ((-0.5) :+ 0)
-
-jzOp :: QuantumOperator Spin
-jzOp = QuantumOperator jz jz
 =======
 -- qS1 :: QuantumState Spin
 -- qS1 x =
@@ -85,4 +62,3 @@ jzOp = QuantumOperator jz jz
 --
 -- jzOp :: QuantumOperator Spin
 -- jzOp = QuantumOperator jz jz
->>>>>>> origin/master
