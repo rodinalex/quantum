@@ -99,7 +99,7 @@ instance (QuantumBasis a) => QuantumUnit (QuantumOperator a) where
           , operatorHC = operator qO}
 
 infixr 8 |>>|
-(|>>|) :: (QuantumBasis a) => (a -> QuantumState a) -> QuantumState a -> QuantumState a
+(|>>|) :: (QuantumBasis a, QuantumBasis b) => (b -> QuantumState a) -> QuantumState a -> QuantumState b
 (|>>|) f qS = QuantumState {qState = \x -> qS |.| f x}
 
 infixr 9 |:|
@@ -107,6 +107,8 @@ infixr 9 |:|
 (|:|) qO1 qO2 = QuantumOperator{
                   operator = \x -> operator qO1 |>>| operator qO2 x
                 , operatorHC = \x -> operatorHC qO2 |>>| operatorHC qO1 x}
+
+-- APPLICATION OF OPERATORS --
 
 instance (QuantumBasis a, a ~ b) => QuantumApplication (QuantumOperator a) (QuantumState b) where
   (|->|) qO qS = operator qO |>>| qS
@@ -118,15 +120,10 @@ instance (QuantumBasis a, a ~ b, QuantumApplication c d) => QuantumApplication (
 
 -- BASIS CHANGE
 
--- ----------------
---
--- matrixForm :: (Ord a) => QuantumOperator a -> [Ket a] -> [[Amplitude]]
--- matrixForm op kets =
---   let
---     bras = fmap hC kets
---     elements =  fmap (fmap (|.|) bras <*> ) $ fmap (op |->|) <$> group kets
---   in
---     elements
---
+newtype BasisTransform a b = BasisTransform {basisT :: b -> QuantumState a}
+
+basisChange :: (QuantumBasis a, QuantumBasis b) => QuantumState a -> BasisTransform a b -> QuantumState b
+basisChange qS tr = basisT tr |>>| qS
+
 -- commute :: (Ord a) => QuantumOperator a -> QuantumOperator a -> QuantumOperator a
 -- commute a b = a |:| b |-| b |:| a

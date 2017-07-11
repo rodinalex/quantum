@@ -3,8 +3,8 @@
 
 module Spin where
 
-import           Algebra
-import qualified Data.Map  as Map
+-- import           Algebra
+-- import qualified Data.Map  as Map
 import           Protolude
 
 -- data CartesianDirection = X
