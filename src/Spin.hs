@@ -3,8 +3,8 @@
 
 module Spin where
 
-import           Algebra
-import qualified Data.Map  as Map
+-- import           Algebra
+-- import qualified Data.Map  as Map
 import           Protolude
 
 -- data CartesianDirection = X
@@ -20,7 +20,6 @@ data Spin = SpinUp
 -- instance BraKet (QuantumState Spin) where
 --   (|.|) a b = 6
 
-=======
 -- qS1 :: QuantumState Spin
 -- qS1 x =
 --   case x of
