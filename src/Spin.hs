@@ -9,48 +9,6 @@ import           Protolude
 data Spin = SpinUp
           | SpinDown deriving (Eq,Show, Ord)
 
--- qS1 :: QuantumState Spin
--- qS1 x =
---   case x of
---     SpinUp   -> 1
---     SpinDown -> -1
---
--- qS2 :: QuantumState Spin
--- qS2 x =
---   case x of
---     SpinUp   -> 3
---     SpinDown -> -3
-
---
--- zUp :: Ket Spin
--- zUp = mkKet (1 :+ 0) SpinUp
---
--- zDown :: Ket Spin
--- zDown = mkKet (1 :+ 0) SpinDown
---
--- xUp ::  Ket Spin
--- xUp = normalize (zUp |+| zDown)
---
--- xDown ::  Ket Spin
--- xDown = normalize (zUp |-| zDown)
---
--- yUp ::  Ket Spin
--- yUp = normalize (zUp |+| (0 :+ 1 :: Complex Double) |*| zDown)
---
--- yDown ::  Ket Spin
--- yDown = normalize (zUp |-| (0 :+ 1 :: Complex Double) |*| zDown)
---
--- jz :: QuantumKernel Spin
--- jz = QuantumKernel { kernel = f }
---   where
---   f x =
---     case x of
---       SpinUp   -> Map.singleton SpinUp (0.5 :+ 0)
---       SpinDown -> Map.singleton SpinDown ((-0.5) :+ 0)
---
--- jzOp :: QuantumOperator Spin
--- jzOp = QuantumOperator jz jz
-
 spinKernel :: (Scalar, Scalar) -> (Spin -> Scalar)
 spinKernel ker x = case x of
                       SpinUp   -> fst ker
