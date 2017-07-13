@@ -25,12 +25,18 @@ instance Biapplicative (:|:) where
 -- TYPECLASSES --
 
 class QuantumBasis a where
-  mkState :: a -> QuantumState a
+  basisSum :: (a -> Scalar) -> Scalar
+  infixr 7 |>|
+  (|>|) :: a -> QuantumState a -> Scalar
+  (|>|) st qS = qState qS st
+  infixr 7 |<|
+  (|<|) :: QuantumState a -> a -> Scalar
+  (|<|) qS st = conjugate $ qState qS st
   infixr 7 |.|
   (|.|) :: QuantumState a -> QuantumState a -> Scalar
+  (|.|) qS1 qS2 = basisSum (\x -> (x |>| qS1) * (x |>| qS2))
 
 class QuantumUnit a where
-  type Basis a
   infixl 6 |+|
   (|+|) :: a -> a -> a
   infixl 6 |-|
@@ -49,8 +55,10 @@ class QuantumApplication a b where
 
 newtype QuantumState a = QuantumState {qState :: a -> Scalar}
 
+mkState :: (a -> Scalar) -> QuantumState a
+mkState f = QuantumState {qState = f}
+
 instance (QuantumBasis a) => QuantumUnit (QuantumState a) where
-  type Basis (QuantumState a) = a
   (|+|) qS1 qS2 = QuantumState {qState = \x -> qState qS1 x + qState qS2 x}
   (|-|) qS1 qS2 = QuantumState {qState = \x -> qState qS1 x - qState qS2 x}
   (|*|) scalar qS = QuantumState {qState = (scalar *) <$> qState qS}
@@ -63,16 +71,8 @@ infixr 7 |<>|
 infixr 7 |><|
 (|><|) :: (QuantumBasis a) => QuantumState a -> QuantumState a -> QuantumOperator a
 (|><|) l r = QuantumOperator{
-              operator = \x -> (r |<>| mkState x) |*| l
-            , operatorHC = \x -> (l |<>| mkState x) |*| r}
-
-infixr 7 |>|
-(|>|) :: (QuantumBasis a) => a -> QuantumState a -> Scalar
-(|>|) st qS = qState qS st
-
-infixr 7 |<|
-(|<|) :: (QuantumBasis a) => QuantumState a -> a -> Scalar
-(|<|) qS st = conjugate $ qState qS st
+              operator = \x -> (r |<| x) |*| l
+            , operatorHC = \x -> (l |<| x) |*| r}
 
 normalize :: (QuantumBasis a) => QuantumState a -> QuantumState a
 normalize qS = (1/sqrt( qS |<>| qS )) |*| qS
@@ -83,8 +83,12 @@ data QuantumOperator a = QuantumOperator {
                           operator   :: a -> QuantumState a
                         , operatorHC :: a -> QuantumState a}
 
+mkOperator :: (a -> QuantumState a) -> (a -> QuantumState a) -> QuantumOperator a
+mkOperator o oHC = QuantumOperator{
+                    operator = o
+                  , operatorHC = oHC}
+
 instance (QuantumBasis a) => QuantumUnit (QuantumOperator a) where
-    type Basis (QuantumOperator a) = a
     (|+|) qO1 qO2 = QuantumOperator{
                     operator = \x -> operator qO1 x |+| operator qO2 x
                   , operatorHC = \x -> operatorHC qO1 x |+| operatorHC qO2 x}
@@ -99,8 +103,8 @@ instance (QuantumBasis a) => QuantumUnit (QuantumOperator a) where
           , operatorHC = operator qO}
 
 infixr 8 |>>|
-(|>>|) :: (QuantumBasis a, QuantumBasis b) => (b -> QuantumState a) -> QuantumState a -> QuantumState b
-(|>>|) f qS = QuantumState {qState = \x -> qS |.| f x}
+(|>>|) :: (QuantumBasis a, QuantumBasis b) => (a -> QuantumState b) -> QuantumState a -> QuantumState b
+(|>>|) f qS = QuantumState {qState = \b -> basisSum (\a -> (a |>| qS) * (b |>| f a))}
 
 infixr 9 |:|
 (|:|) :: (QuantumBasis a) => QuantumOperator a -> QuantumOperator a -> QuantumOperator a
@@ -120,10 +124,21 @@ instance (QuantumBasis a, a ~ b, QuantumApplication c d) => QuantumApplication (
 
 -- BASIS CHANGE
 
-newtype BasisTransform a b = BasisTransform {basisT :: b -> QuantumState a}
+newtype BasisTransform a b = BasisTransform {basisT :: a -> QuantumState b}
 
 basisChange :: (QuantumBasis a, QuantumBasis b) => QuantumState a -> BasisTransform a b -> QuantumState b
 basisChange qS tr = basisT tr |>>| qS
 
--- commute :: (Ord a) => QuantumOperator a -> QuantumOperator a -> QuantumOperator a
--- commute a b = a |:| b |-| b |:| a
+commute :: (QuantumBasis a) => QuantumOperator a -> QuantumOperator a -> QuantumOperator a
+commute a b = a |:| b |-| b |:| a
+
+
+------
+
+-- matrixForm :: QuantumOperator a -> [[QuantumState a]] -> [[Scalar]]
+-- matrixForm op kets =
+--   let
+--     bras = fmap.fmap hC kets
+--     elements =  (fmap (|.|) bras) <*>   fmap.fmap (op |->|) kets
+--     in
+--     elements
