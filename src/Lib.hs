@@ -10,11 +10,11 @@ module Lib
     ( someFunc
     ) where
 
-import Lib.Prelude
-
+import           FirstQuantization.SpinHalf
+import           Lib.Prelude
 -- | Prints someFunc
 --
 -- >>> someFunc 10
 -- someFunc
 someFunc :: IO ()
-someFunc = putStrLn ("someFunc" :: Text)
+someFunc = putStrLn ("Hello" :: Text)
